@@ -1,0 +1,17 @@
+[package]
+name = "sigmaos-location"
+version = "0.1.0"
+edition = "2021"
+authors = ["SigmaOS Project"]
+description = "Location and geolocation services"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/AaryanSinghChauhan09/SigmaOS-location"
+readme = "README.md"
+keywords = ["location", "geolocation", "gps"]
+categories = ["os"]
+
+[dependencies]
+sigmaos-kernel = { version = "0.1", path = "../SigmaOS-kernel" }
+
+[profile.release]
+opt-level = 3
