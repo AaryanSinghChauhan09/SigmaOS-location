@@ -151,20 +151,92 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_location_manager_lifecycle() {
+        // Arrange
+        let mut manager = LocationManager::new("gps_core");
+        assert_eq!(manager.name, "gps_core");
+        assert!(!manager.is_enabled());
+
+        // Act
+        let enable_res = manager.enable();
+        // Assert
+        assert!(enable_res.is_ok());
+        assert!(manager.is_enabled());
+
+        // Act
+        let disable_res = manager.disable();
+        // Assert
+        assert!(disable_res.is_ok());
+        assert!(!manager.is_enabled());
+    }
+
+    #[test]
     fn test_location_manager_init() {
+        // Arrange
         let mut manager = GpsData::new();
         assert!(!manager.is_initialized());
-        assert!(manager.init().is_ok());
+
+        // Act
+        let init_res = manager.init();
+
+        // Assert
+        assert!(init_res.is_ok());
         assert!(manager.is_initialized());
     }
 
     #[test]
-    fn test_location_resource_add() {
+    fn test_location_resource_add_and_query() {
+        // Arrange
         let mut manager = GpsData::new();
         manager.init().unwrap();
-        let resource = LocationManager::new("test");
+        let resource = LocationManager::new("geoloc_sensor");
+
+        // Act
         let id = manager.add(resource).unwrap();
+
+        // Assert
         assert_eq!(id, 0);
-        assert!(manager.get(0).is_some());
+        let item = manager.get(0);
+        assert!(item.is_some());
+        assert_eq!(item.unwrap().name, "geoloc_sensor");
+        assert_eq!(manager.list().len(), 1);
+    }
+
+    #[test]
+    fn test_location_resource_add_uninitialized_fails() {
+        // Arrange: uninitialized manager
+        let mut manager = GpsData::new();
+        let resource = LocationManager::new("sensor_fail");
+
+        // Act
+        let res = manager.add(resource);
+
+        // Assert: Defensive programming - should reject when uninitialized
+        assert_eq!(res, Err(LocationError::NotSupported));
+    }
+
+    #[test]
+    fn test_location_manager_shutdown() {
+        // Arrange
+        let mut manager = GpsData::new();
+        manager.init().unwrap();
+        manager.add(LocationManager::new("res1")).unwrap();
+        assert_eq!(manager.list().len(), 1);
+
+        // Act
+        let shut_res = manager.shutdown();
+
+        // Assert
+        assert!(shut_res.is_ok());
+        assert!(!manager.is_initialized());
+        assert_eq!(manager.list().len(), 0);
+    }
+
+    #[test]
+    fn test_location_error_formatting() {
+        // Arrange & Act & Assert
+        assert_eq!(format!("{}", LocationError::NotSupported), "Location: operation not supported");
+        assert_eq!(format!("{}", LocationError::NotFound), "Location: resource not found");
+        assert_eq!(format!("{}", LocationError::PermissionDenied), "Location: permission denied");
     }
 }
