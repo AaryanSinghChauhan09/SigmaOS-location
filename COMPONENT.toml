@@ -3,12 +3,12 @@ name = "SigmaOS-location"
 tier = 2
 stability = "scaffold"
 language = "rust"
-description = "location component"
+description = "SigmaOS location services and geolocation support"
 upstream = []
 
 [contract]
 provides = ["component"]
-depends_on = []
+depends_on = ["SigmaOS-system"]
 
 [maturity]
 status = "Scaffold"
